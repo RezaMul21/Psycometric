@@ -41,6 +41,10 @@
     }
     .brand h1 { margin: 0; font-size: 19px; letter-spacing: -.4px; }
     .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .creator { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; color: var(--muted); font-size: 11px; }
+    .creator strong { color: var(--ink); font-weight: 650; }
+    .creator a { color: var(--green); text-decoration: none; }
+    .creator a:hover { color: var(--green-dark); text-decoration: underline; }
     .pressure-control { display: flex; align-items: center; gap: 10px; padding: 9px 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
     .pressure-control label { color: var(--muted); font-size: 12px; }
     .pressure-control input { width: 76px; padding: 3px 0; border: 0; outline: 0; color: var(--ink); font-weight: 650; text-align: right; }
@@ -159,6 +163,9 @@
         <div>
           <h1>Analisis Psikrometri</h1>
           <p>Visualisasikan kondisi udara dan prosesnya</p>
+          <div class="creator" aria-label="Informasi pembuat">
+            <a href="https://www.linkedin.com/in/rezamulyanalfa" target="_blank" rel="noopener noreferrer">LinkedIn: Reza Alfarizi Mulyana</a>
+          </div>
         </div>
       </div>
       <div class="pressure-control">
