@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>Psikrometri — Analisis Udara</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2925;
+      --muted: #69756f;
+      --line: #e2e5df;
+      --paper: #fff;
+      --canvas: #f5f4ef;
+      --green: #176b52;
+      --green-dark: #10513e;
+      --mint: #e9f4ee;
+      --orange: #e28a48;
+      --shadow: 0 18px 55px rgba(34, 49, 41, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app { max-width: 1800px; margin: 0 auto; padding: 28px 34px 44px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 25px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px;
+      background: var(--green); color: white; font-size: 20px; font-weight: 700;
+    }
+    .brand h1 { margin: 0; font-size: 19px; letter-spacing: -.4px; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .pressure-control { display: flex; align-items: center; gap: 10px; padding: 9px 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+    .pressure-control label { color: var(--muted); font-size: 12px; }
+    .pressure-control input { width: 76px; padding: 3px 0; border: 0; outline: 0; color: var(--ink); font-weight: 650; text-align: right; }
+    .pressure-control span { color: var(--muted); font-size: 12px; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; }
+    .panel { min-width: 0; overflow: hidden; background: var(--paper); border: 1px solid var(--line); border-radius: 17px; box-shadow: var(--shadow); }
+    .chart-panel { padding: 18px 18px 14px; }
+    .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin: 0 0 13px; }
+    .panel-heading h2, .side-section h2 { margin: 0; font-size: 15px; letter-spacing: -.15px; }
+    .panel-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .chart-tools { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; }
+    .legend-dot { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border: 2px solid white; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 1px var(--green); vertical-align: -1px; }
+    .chart-wrap { position: relative; width: 100%; aspect-ratio: 1200 / 800; overflow: hidden; border: 1px solid #e8e9e5; border-radius: 9px; background: #fff; }
+    .chart-overlay { display: block; width: 100%; height: 100%; touch-action: manipulation; }
+    .chart-overlay text { font-family: "Segoe UI", Arial, sans-serif; }
+    .chart-overlay .grid-line { stroke: #e6eae7; stroke-width: 1; }
+    .chart-overlay .grid-line.major { stroke: #d3dad5; }
+    .chart-overlay .rh-line { fill: none; stroke: #9ab8a8; stroke-width: 1.5; }
+    .chart-overlay .rh-line.saturated { stroke: #176b52; stroke-width: 3; }
+    .chart-overlay .enthalpy-line { fill: none; stroke: #d3a279; stroke-width: 1.25; stroke-dasharray: 5 4; }
+    .chart-overlay .axis-line { stroke: #53615a; stroke-width: 2; }
+    .chart-overlay .chart-label { fill: #53615a; font-size: 13px; }
+    .chart-overlay .curve-label { fill: #176b52; font-size: 12px; font-weight: 650; }
+    .chart-overlay .enthalpy-label { fill: #9a6844; font-size: 11px; }
+    .chart-overlay .process { fill: none; stroke: #176b52; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .8; pointer-events: none; }
+    .chart-overlay .point { stroke: #fff; stroke-width: 3; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
+    .chart-overlay .point.selected { stroke: #182b25; stroke-width: 4; }
+    .chart-overlay .point-label { fill: #12251e; stroke: white; stroke-width: 4px; paint-order: stroke; font-size: 15px; font-weight: 700; pointer-events: none; }
+    .chart-overlay .point-group { cursor: pointer; }
+    .chart-hint { display: flex; justify-content: space-between; gap: 12px; padding-top: 11px; color: var(--muted); font-size: 11px; }
+    .chart-hint strong { color: var(--green); font-weight: 650; }
+
+    .sidebar { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); align-items: start; gap: 16px; }
+    .side-section { padding: 18px; }
+    .side-section h2 { margin-bottom: 14px; }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #53615a; font-size: 11px; font-weight: 650; }
+    .input-shell { display: flex; align-items: center; min-width: 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: #fcfcfa; }
+    .input-shell:focus-within { border-color: #7eac97; box-shadow: 0 0 0 3px rgba(23,107,82,.08); }
+    .input-shell input { width: 100%; min-width: 0; padding: 10px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
+    .input-shell select { width: 100%; min-width: 0; padding: 10px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
+    .input-shell span { margin-left: 5px; color: #849088; font-size: 11px; white-space: nowrap; }
+    .primary-btn { width: 100%; margin-top: 14px; padding: 11px 14px; border: 0; border-radius: 9px; background: var(--green); color: #fff; font-weight: 650; transition: background .15s, transform .15s; }
+    .primary-btn:hover { background: var(--green-dark); }
+    .primary-btn:active { transform: translateY(1px); }
+    .secondary-btn { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #59665f; font-size: 11px; }
+    .secondary-btn:hover { border-color: #b6c6bd; color: var(--green); }
+    .form-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 14px; }
+    .form-actions .primary-btn { margin: 0; }
+    .edit-btn { padding: 5px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--green); font-size: 11px; }
+    .edit-btn:hover { background: var(--mint); }
+    .form-note { margin: 11px 0 0; color: var(--muted); font-size: 11px; }
+    .message { display: none; margin-top: 11px; padding: 9px 10px; border-radius: 8px; font-size: 11px; }
+    .message.error { display: block; background: #fff0ed; color: #a53d2d; }
+
+    .point-list { display: grid; gap: 8px; }
+    .empty-state { padding: 14px 12px; border: 1px dashed #d5ddd7; border-radius: 10px; color: var(--muted); text-align: center; font-size: 11px; }
+    .point-row { display: flex; align-items: center; gap: 9px; padding: 9px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+    .point-row.active { border-color: #9cbead; background: #f5faf7; }
+    .point-row.editing { box-shadow: inset 3px 0 var(--green); }
+    .point-color { flex: 0 0 11px; width: 11px; height: 11px; border-radius: 50%; }
+    .point-info { flex: 1; min-width: 0; }
+    .point-info strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .point-info small { color: var(--muted); font-size: 10px; }
+    .delete-btn { padding: 4px 6px; border: 0; background: transparent; color: #8c9890; font-size: 17px; line-height: 1; }
+    .delete-btn:hover { color: #b33f32; }
+    .list-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 11px; }
+    .list-actions span { color: var(--muted); font-size: 10px; }
+
+    .results { margin-top: 20px; }
+    .results-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+    .results-head h2 { margin: 0; font-size: 15px; }
+    .results-head span { color: var(--muted); font-size: 11px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .parameter-table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+    .parameter-table th, .parameter-table td { padding: 10px 12px; border-bottom: 1px solid #edf0ec; text-align: right; }
+    .parameter-table th { position: sticky; top: 0; background: #f7f9f7; color: #53615a; font-size: 10px; font-weight: 650; }
+    .parameter-table th:first-child, .parameter-table td:first-child { position: sticky; left: 0; text-align: left; }
+    .parameter-table th:first-child { z-index: 2; background: #f7f9f7; }
+    .parameter-table td:first-child { background: white; font-weight: 650; }
+    .parameter-table tbody tr { cursor: pointer; }
+    .parameter-table tbody tr:hover td { background: #f8fbf9; }
+    .parameter-table tbody tr.selected td { background: #edf6f1; }
+    .parameter-table tbody tr:last-child td { border-bottom: 0; }
+    .parameter-table .point-name-cell { display: flex; align-items: center; gap: 8px; }
+    .parameter-table .point-color { flex: 0 0 9px; width: 9px; height: 9px; }
+    .results-empty { padding: 22px; border: 1px dashed #d5ddd7; border-radius: 11px; color: var(--muted); text-align: center; font-size: 12px; }
+    .disclaimer { margin: 11px 1px 0; color: var(--muted); font-size: 10px; }
+
+    @media (max-width: 1000px) {
+      .app { padding: 22px 20px 34px; }
+    }
+    @media (max-width: 760px) {
+      .app { padding: 16px 12px 28px; }
+      .topbar { align-items: flex-start; flex-direction: column; margin-bottom: 16px; }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: 1fr; align-items: start; }
+      .chart-panel { padding: 12px; }
+      .chart-tools { display: none; }
+      .chart-hint { flex-direction: column; gap: 4px; }
+    }
+    @media (max-width: 520px) {
+      .sidebar { grid-template-columns: 1fr; }
+      .results-head { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">Ψ</div>
+        <div>
+          <h1>Analisis Psikrometri</h1>
+          <p>Visualisasikan kondisi udara dan prosesnya</p>
+        </div>
+      </div>
+      <div class="pressure-control">
+        <label for="pressure">Tekanan atmosfer</label>
+        <input id="pressure" type="number" min="50" max="120" step="0.001" value="101.325" aria-label="Tekanan atmosfer">
+        <span>kPa</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel chart-panel" aria-labelledby="chart-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="chart-title">Bagan psikrometri</h2>
+            <p>ASHRAE · Normal temperature · Sea level</p>
+          </div>
+          <div class="chart-tools"><span><i class="legend-dot"></i> Titik kondisi</span><span>Garis = proses</span></div>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <svg class="chart-overlay" id="chartOverlay" viewBox="0 0 1200 800" role="img" aria-label="Bagan psikrometri vektor dengan suhu bola kering pada sumbu horizontal dan rasio kelembapan pada sumbu vertikal"></svg>
+        </div>
+        <div class="chart-hint">
+          <span><strong>Tip:</strong> klik area bagan untuk menambahkan titik. Garis grid dihitung berdasarkan tekanan yang dipilih.</span>
+          <span>Sumbu: suhu bola kering 0–50 °C · rasio kelembapan 0–30 g/kg</span>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel side-section">
+          <h2>Tambah titik kondisi</h2>
+          <form id="pointForm">
+            <div class="input-grid">
+              <div class="field full">
+                <label for="pointName">Nama titik</label>
+                <div class="input-shell"><input id="pointName" type="text" maxlength="24" placeholder="Contoh: Udara luar"></div>
+              </div>
+              <div class="field">
+                <label for="parameterA">Parameter 1</label>
+                <div class="input-shell"><select id="parameterA"></select></div>
+              </div>
+              <div class="field">
+                <label for="parameterB">Parameter 2</label>
+                <div class="input-shell"><select id="parameterB"></select></div>
+              </div>
+              <div class="field">
+                <label id="valueALabel" for="valueA">Nilai parameter 1</label>
+                <div class="input-shell"><input id="valueA" type="number" step="any" required><span id="unitA"></span></div>
+              </div>
+              <div class="field">
+                <label id="valueBLabel" for="valueB">Nilai parameter 2</label>
+                <div class="input-shell"><input id="valueB" type="number" step="any" required><span id="unitB"></span></div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="primary-btn" id="submitPoint" type="submit">＋ &nbsp; Tambahkan titik</button>
+              <button class="secondary-btn" id="cancelEdit" type="button" hidden>Batal edit</button>
+            </div>
+            <p class="form-note">Pilih dua parameter kondisi yang diketahui. Parameter lainnya dihitung otomatis; titik kedua dan seterusnya membentuk garis proses.</p>
+            <div class="message" id="formMessage" role="alert"></div>
+          </form>
+        </section>
+
+        <section class="panel side-section">
+          <h2>Titik pada proses</h2>
+          <div class="point-list" id="pointList"></div>
+          <div class="list-actions">
+            <span id="pointCount">0 titik</span>
+            <button class="secondary-btn" id="clearPoints" type="button">Hapus semua</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="results" aria-labelledby="results-title">
+      <div class="results-head">
+        <h2 id="results-title">Parameter setiap titik</h2>
+        <span id="selectedCaption">Pilih baris atau titik pada bagan untuk menyorot kondisi</span>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <div class="results-empty">Tambahkan titik untuk menampilkan parameter setiap kondisi udara.</div>
+      </div>
+      <p class="disclaimer">Bagan vektor dan parameter dihitung dari persamaan psikrometri pada tekanan yang dimasukkan. Suhu bola basah menggunakan pendekatan garis entalpi konstan.</p>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const CHART = { xMin: 90, xMax: 1160, yBottom: 700, yTop: 30, tempMin: 0, tempMax: 50, maxHumidityRatio: 30 };
+      const COLORS = ["#176b52", "#e28a48", "#5a75bb", "#b25272", "#8b65b2", "#348c91", "#a38a35", "#527c45"];
+      const state = { points: [], selectedId: null, editingId: null, nextId: 1 };
+      const $ = (id) => document.getElementById(id);
+      const overlay = $("chartOverlay");
+      const pressureInput = $("pressure");
+      const PARAMETERS = [
+        { key: "dryBulb", label: "Suhu bola kering", unit: "°C", min: 0, max: 50, step: 0.1, scale: 25, initial: 30 },
+        { key: "relativeHumidity", label: "Kelembapan relatif", unit: "%", min: 0, max: 100, step: 0.1, scale: 50, initial: 60 },
+        { key: "humidityRatio", label: "Rasio kelembapan", unit: "g/kg", min: 0, max: 30, step: 0.01, scale: 10, initial: 16.04 },
+        { key: "enthalpy", label: "Entalpi", unit: "kJ/kg", min: 0, max: 160, step: 0.01, scale: 60, initial: 71.19 },
+        { key: "wetBulb", label: "Suhu bola basah", unit: "°C", min: -50, max: 50, step: 0.1, scale: 25, initial: 23.75 },
+        { key: "dewPoint", label: "Titik embun", unit: "°C", min: -100, max: 50, step: 0.1, scale: 25, initial: 21.39 },
+        { key: "specificVolume", label: "Volume spesifik", unit: "m³/kg", min: 0.3, max: 3, step: 0.001, scale: 0.9, initial: 0.879 },
+        { key: "vaporPressure", label: "Tekanan uap", unit: "kPa", min: 0, max: 20, step: 0.001, scale: 5, initial: 2.548 }
+      ];
+      let lastPressure = Number(pressureInput.value);
+
+      function pressureKpa() {
+        const pressure = Number(pressureInput.value);
+        if (!Number.isFinite(pressure) || pressure < 50 || pressure > 120) {
+          throw new Error("Tekanan harus berada di antara 50 dan 120 kPa.");
+        }
+        return pressure;
+      }
+
+      function saturationPressure(T) {
+        const kelvin = T + 273.15;
+        if (T >= 0) {
+          return Math.exp(
+            -5.8002206e3 / kelvin + 1.3914993 - 4.8640239e-2 * kelvin +
+            4.1764768e-5 * kelvin ** 2 - 1.4452093e-8 * kelvin ** 3 +
+            6.5459673 * Math.log(kelvin)
+          ) / 1000;
+        }
+        return Math.exp(
+          -5.6745359e3 / kelvin + 6.3925247 - 9.677843e-3 * kelvin +
+          6.2215701e-7 * kelvin ** 2 + 2.0747825e-9 * kelvin ** 3 -
+          9.484024e-13 * kelvin ** 4 + 4.1635019 * Math.log(kelvin)
+        ) / 1000;
+      }
+
+      function humidityRatioFromVaporPressure(pv, pressure) {
+        if (pv >= pressure) throw new Error(`Tekanan uap (${pv.toFixed(2)} kPa) tidak boleh melebihi tekanan atmosfer (${pressure.toFixed(2)} kPa).`);
+        return 0.621945 * pv / (pressure - pv);
+      }
+
+      function saturatedHumidityRatio(T, pressure) {
+        return humidityRatioFromVaporPressure(saturationPressure(T), pressure);
+      }
+
+      function dewPointFromVaporPressure(pvKpa) {
+        if (pvKpa === 0) return null;
+        const target = pvKpa;
+        let low = -100;
+        let high = 100;
+        for (let i = 0; i < 80; i++) {
+          const middle = (low + high) / 2;
+          if (saturationPressure(middle) < target) low = middle;
+          else high = middle;
+        }
+        return (low + high) / 2;
+      }
+
+      function calculate(T, rh, pressure) {
+        const pv = saturationPressure(T) * rh / 100;
+        const W = humidityRatioFromVaporPressure(pv, pressure);
+        const enthalpy = 1.006 * T + W * (2501 + 1.86 * T);
+        const dewPoint = dewPointFromVaporPressure(pv);
+        const specificVolume = 0.287042 * (T + 273.15) * (1 + 1.607858 * W) / pressure;
+
+        let low = Math.max(-100, dewPoint ?? -100);
+        let high = T;
+        for (let i = 0; i < 80; i++) {
+          const wetBulb = (low + high) / 2;
+          const saturatedW = saturatedHumidityRatio(wetBulb, pressure);
+          const saturatedEnthalpy = 1.006 * wetBulb + saturatedW * (2501 + 1.86 * wetBulb);
+          if (saturatedEnthalpy < enthalpy) low = wetBulb;
+          else high = wetBulb;
+        }
+        return {
+          T, rh, W, enthalpy, dewPoint, wetBulb: (low + high) / 2, specificVolume, vaporPressure: pv
+        };
+      }
+
+      function parameterValue(result, key) {
+        const values = {
+          dryBulb: result.T,
+          relativeHumidity: result.rh,
+          humidityRatio: result.W * 1000,
+          enthalpy: result.enthalpy,
+          wetBulb: result.wetBulb,
+          dewPoint: result.dewPoint,
+          specificVolume: result.specificVolume,
+          vaporPressure: result.vaporPressure
+        };
+        return values[key];
+      }
+
+      function solveState(parameterA, targetA, parameterB, targetB, pressure) {
+        const parameterByKey = new Map(PARAMETERS.map((parameter) => [parameter.key, parameter]));
+        const scaleA = parameterByKey.get(parameterA).scale;
+        const scaleB = parameterByKey.get(parameterB).scale;
+        let best = { error: Infinity, T: 0, rh: 0 };
+
+        function residual(T, rh) {
+          const result = calculate(T, rh, pressure);
+          const valueA = parameterValue(result, parameterA);
+          const valueB = parameterValue(result, parameterB);
+          if (!Number.isFinite(valueA) || !Number.isFinite(valueB)) return null;
+          return [(valueA - targetA) / scaleA, (valueB - targetB) / scaleB];
+        }
+
+        function errorOf(values) {
+          return values ? Math.hypot(values[0], values[1]) : Infinity;
+        }
+
+        for (const startT of [0, 12.5, 25, 37.5, 50]) {
+          for (const startRh of [0, 25, 50, 75, 100]) {
+            let T = startT;
+            let rh = startRh;
+
+            for (let iteration = 0; iteration < 50; iteration++) {
+              const current = residual(T, rh);
+              const currentError = errorOf(current);
+              if (currentError < best.error) best = { error: currentError, T, rh };
+              if (currentError < 1e-7) break;
+              if (!current) break;
+
+              const lowT = Math.max(0, T - 0.02);
+              const highT = Math.min(50, T + 0.02);
+              const lowRh = Math.max(0, rh - 0.1);
+              const highRh = Math.min(100, rh + 0.1);
+              if (lowT === highT || lowRh === highRh) break;
+              const atLowT = residual(lowT, rh);
+              const atHighT = residual(highT, rh);
+              const atLowRh = residual(T, lowRh);
+              const atHighRh = residual(T, highRh);
+              if (!atLowT || !atHighT || !atLowRh || !atHighRh) break;
+
+              const j11 = (atHighT[0] - atLowT[0]) / (highT - lowT);
+              const j21 = (atHighT[1] - atLowT[1]) / (highT - lowT);
+              const j12 = (atHighRh[0] - atLowRh[0]) / (highRh - lowRh);
+              const j22 = (atHighRh[1] - atLowRh[1]) / (highRh - lowRh);
+              const determinant = j11 * j22 - j12 * j21;
+              if (Math.abs(determinant) < 1e-12) break;
+
+              const stepT = Math.max(-25, Math.min(25, (-current[0] * j22 + j12 * current[1]) / determinant));
+              const stepRh = Math.max(-50, Math.min(50, (-j11 * current[1] + j21 * current[0]) / determinant));
+              let improved = false;
+              for (let factor = 1; factor >= 1 / 64; factor /= 2) {
+                const nextT = Math.max(0, Math.min(50, T + stepT * factor));
+                const nextRh = Math.max(0, Math.min(100, rh + stepRh * factor));
+                const nextError = errorOf(residual(nextT, nextRh));
+                if (nextError < currentError) {
+                  T = nextT;
+                  rh = nextRh;
+                  improved = true;
+                  break;
+                }
+              }
+              if (!improved) break;
+            }
+            if (best.error < 1e-7) return best;
+          }
+        }
+
+        if (best.error > 2e-5) {
+          throw new Error("Kombinasi nilai tidak menghasilkan kondisi udara pada rentang bagan, atau kedua parameter tidak independen. Periksa nilainya atau pilih pasangan parameter lain.");
+        }
+        return best;
+      }
+
+      function setupParameterInputs() {
+        const selectA = $("parameterA");
+        const selectB = $("parameterB");
+        PARAMETERS.forEach((parameter) => {
+          const optionA = document.createElement("option");
+          optionA.value = parameter.key;
+          optionA.textContent = parameter.label;
+          selectA.appendChild(optionA);
+          const optionB = optionA.cloneNode(true);
+          selectB.appendChild(optionB);
+        });
+        selectA.value = "dryBulb";
+        selectB.value = "relativeHumidity";
+        updateParameterInputs();
+
+        selectA.addEventListener("change", () => updateParameterInputs("a"));
+        selectB.addEventListener("change", () => updateParameterInputs("b"));
+      }
+
+      function updateParameterInputs(changed) {
+        const selectA = $("parameterA");
+        const selectB = $("parameterB");
+        if (selectA.value === selectB.value) {
+          const replacement = PARAMETERS.find((parameter) => parameter.key !== selectA.value);
+          if (changed === "a") selectB.value = replacement.key;
+          else selectA.value = replacement.key;
+        }
+
+        [...selectA.options].forEach((option) => { option.disabled = option.value === selectB.value; });
+        [...selectB.options].forEach((option) => { option.disabled = option.value === selectA.value; });
+
+        [["a", selectA.value], ["b", selectB.value]].forEach(([suffix, key]) => {
+          const parameter = PARAMETERS.find((item) => item.key === key);
+          const input = $(`value${suffix.toUpperCase()}`);
+          $(`value${suffix.toUpperCase()}Label`).textContent = parameter.label;
+          $(`unit${suffix.toUpperCase()}`).textContent = parameter.unit;
+          input.min = String(parameter.min);
+          input.max = String(parameter.max);
+          input.step = "any";
+          const editingPoint = state.points.find((point) => point.id === state.editingId);
+          const value = editingPoint ? parameterValue(editingPoint, key) : parameter.initial;
+          input.value = Number.isFinite(value) ? Number(value.toPrecision(12)).toString() : "";
+        });
+      }
+
+      function createPoint(T, rh, name, existingPoint) {
+        const pressure = pressureKpa();
+        if (!Number.isFinite(T) || T < 0 || T > 50) throw new Error("Suhu harus berada pada rentang 0–50 °C.");
+        if (!Number.isFinite(rh) || rh < 0 || rh > 100) throw new Error("RH harus berada pada rentang 0–100%.");
+        const result = calculate(T, rh, pressure);
+        if (result.W * 1000 > CHART.maxHumidityRatio) {
+          throw new Error("Kondisi ini berada di luar area bagan (rasio kelembapan lebih dari 30 g/kg).");
+        }
+        const point = {
+          id: existingPoint ? existingPoint.id : state.nextId++,
+          name: name.trim() || existingPoint?.name || `Titik ${state.points.length + 1}`,
+          color: existingPoint?.color || COLORS[(state.nextId - 2) % COLORS.length],
+          ...result
+        };
+        if (existingPoint) {
+          state.points = state.points.map((item) => item.id === existingPoint.id ? point : item);
+        } else {
+          state.points.push(point);
+        }
+        state.selectedId = point.id;
+        return point;
+      }
+
+      function stopEditing() {
+        state.editingId = null;
+        $("submitPoint").textContent = "＋  Tambahkan titik";
+        $("cancelEdit").hidden = true;
+      }
+
+      function startEditing(id) {
+        const point = state.points.find((item) => item.id === id);
+        if (!point) return;
+        state.editingId = id;
+        state.selectedId = id;
+        $("pointName").value = point.name;
+        updateParameterInputs();
+        $("submitPoint").textContent = "Simpan perubahan";
+        $("cancelEdit").hidden = false;
+        render();
+        $("pointName").focus();
+        $("pointForm").scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      function chartPosition(point) {
+        const x = CHART.xMin + (point.T - CHART.tempMin) / (CHART.tempMax - CHART.tempMin) * (CHART.xMax - CHART.xMin);
+        const y = CHART.yBottom - point.W * 1000 / CHART.maxHumidityRatio * (CHART.yBottom - CHART.yTop);
+        return { x, y };
+      }
+
+      function svgElement(tag, attributes = {}) {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+        return element;
+      }
+
+      function chartPath(valueAtTemperature, pressure, step = 0.25) {
+        const commands = [];
+        for (let T = CHART.tempMin; T <= CHART.tempMax + 1e-8; T += step) {
+          const value = valueAtTemperature(T, pressure);
+          if (!Number.isFinite(value)) continue;
+          const point = chartPosition({ T, W: value / 1000 });
+          commands.push(`${commands.length ? "L" : "M"}${point.x.toFixed(2)},${point.y.toFixed(2)}`);
+        }
+        return commands.join(" ");
+      }
+
+      function addText(parent, text, x, y, className, attributes = {}) {
+        const label = svgElement("text", { class: className, x, y, ...attributes });
+        label.textContent = text;
+        parent.appendChild(label);
+        return label;
+      }
+
+      function renderChartBase() {
+        overlay.replaceChildren();
+        const pressure = pressureKpa();
+        const defs = svgElement("defs");
+        const clip = svgElement("clipPath", { id: "psychrometricPlotClip" });
+        let saturatedEnd = CHART.tempMax;
+        if (saturatedHumidityRatio(saturatedEnd, pressure) * 1000 > CHART.maxHumidityRatio) {
+          let low = CHART.tempMin;
+          let high = CHART.tempMax;
+          for (let i = 0; i < 50; i++) {
+            const middle = (low + high) / 2;
+            if (saturatedHumidityRatio(middle, pressure) * 1000 < CHART.maxHumidityRatio) low = middle;
+            else high = middle;
+          }
+          saturatedEnd = low;
+        }
+        const boundary = [
+          `M${CHART.xMin},${CHART.yBottom}`,
+          `L${CHART.xMax},${CHART.yBottom}`,
+          `L${CHART.xMax},${CHART.yTop}`,
+          `L${chartPosition({ T: saturatedEnd, W: CHART.maxHumidityRatio / 1000 }).x},${CHART.yTop}`
+        ];
+        for (let T = saturatedEnd; T >= CHART.tempMin - 1e-8; T -= 0.2) {
+          const W = saturatedHumidityRatio(Math.max(CHART.tempMin, T), pressure);
+          const point = chartPosition({ T: Math.max(CHART.tempMin, T), W });
+          boundary.push(`L${point.x.toFixed(2)},${point.y.toFixed(2)}`);
+        }
+        boundary.push("Z");
+        clip.appendChild(svgElement("path", { d: boundary.join(" ") }));
+        defs.appendChild(clip);
+        overlay.appendChild(defs);
+
+        const fill = svgElement("path", {
+          d: boundary.join(" "),
+          fill: "#fbfcfa",
+          stroke: "none"
+        });
+        overlay.appendChild(fill);
+
+        const grid = svgElement("g", { "clip-path": "url(#psychrometricPlotClip)" });
+        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 2.5) {
+          const x = chartPosition({ T, W: 0 }).x;
+          grid.appendChild(svgElement("line", {
+            class: `grid-line${T % 5 === 0 ? " major" : ""}`,
+            x1: x, y1: CHART.yTop, x2: x, y2: CHART.yBottom
+          }));
+        }
+        for (let W = 1; W <= CHART.maxHumidityRatio; W++) {
+          const y = chartPosition({ T: 0, W: W / 1000 }).y;
+          grid.appendChild(svgElement("line", {
+            class: `grid-line${W % 5 === 0 ? " major" : ""}`,
+            x1: CHART.xMin, y1: y, x2: CHART.xMax, y2: y
+          }));
+        }
+
+        for (let rh = 10; rh <= 100; rh += 10) {
+          const path = chartPath((T, P) => {
+            const vaporPressure = saturationPressure(T) * rh / 100;
+            return 1000 * humidityRatioFromVaporPressure(vaporPressure, P);
+          }, pressure);
+          grid.appendChild(svgElement("path", {
+            class: `rh-line${rh === 100 ? " saturated" : ""}`,
+            d: path
+          }));
+        }
+
+        for (let enthalpy = 20; enthalpy <= 160; enthalpy += 10) {
+          const path = chartPath((T) => 1000 * (enthalpy - 1.006 * T) / (2501 + 1.86 * T), pressure);
+          grid.appendChild(svgElement("path", { class: "enthalpy-line", d: path }));
+        }
+        overlay.appendChild(grid);
+
+        const axes = svgElement("g");
+        axes.appendChild(svgElement("line", {
+          class: "axis-line", x1: CHART.xMin, y1: CHART.yBottom, x2: CHART.xMax, y2: CHART.yBottom
+        }));
+        axes.appendChild(svgElement("line", {
+          class: "axis-line", x1: CHART.xMax, y1: CHART.yTop, x2: CHART.xMax, y2: CHART.yBottom
+        }));
+        overlay.appendChild(axes);
+
+        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 5) {
+          const x = chartPosition({ T, W: 0 }).x;
+          addText(overlay, String(T), x, CHART.yBottom + 23, "chart-label", { "text-anchor": "middle" });
+        }
+        for (let W = 0; W <= CHART.maxHumidityRatio; W += 2) {
+          const y = chartPosition({ T: 0, W: W / 1000 }).y;
+          overlay.appendChild(svgElement("line", {
+            class: "axis-line", x1: CHART.xMax, y1: y, x2: CHART.xMax + 6, y2: y
+          }));
+          addText(overlay, String(W), CHART.xMax + 12, y + 4, "chart-label");
+        }
+        addText(overlay, "Suhu bola kering (°C)", (CHART.xMin + CHART.xMax) / 2, 775, "chart-label", { "text-anchor": "middle" });
+        addText(overlay, "Rasio kelembapan (g/kg udara kering)", 23, (CHART.yTop + CHART.yBottom) / 2, "chart-label", {
+          "text-anchor": "middle",
+          transform: `rotate(-90 23 ${(CHART.yTop + CHART.yBottom) / 2})`
+        });
+        addText(overlay, `Tekanan ${pressure.toFixed(3)} kPa`, CHART.xMin + 8, CHART.yTop + 18, "chart-label");
+
+        for (let rh = 10; rh <= 100; rh += 10) {
+          let labelT = CHART.tempMax;
+          while (labelT > CHART.tempMin) {
+            const vaporPressure = saturationPressure(labelT) * rh / 100;
+            const W = humidityRatioFromVaporPressure(vaporPressure, pressure);
+            if (W * 1000 <= CHART.maxHumidityRatio - 0.4) break;
+            labelT -= 0.25;
+          }
+          const W = humidityRatioFromVaporPressure(saturationPressure(labelT) * rh / 100, pressure);
+          const position = chartPosition({ T: labelT, W });
+          addText(overlay, `${rh}%`, position.x - 6, position.y - 5, "curve-label", { "text-anchor": "end" });
+        }
+
+        for (let enthalpy = 40; enthalpy <= 140; enthalpy += 20) {
+          const labelT = 48;
+          const W = (enthalpy - 1.006 * labelT) / (2501 + 1.86 * labelT);
+          if (W > 0 && W * 1000 < CHART.maxHumidityRatio) {
+            const position = chartPosition({ T: labelT, W });
+            addText(overlay, String(enthalpy), position.x - 6, position.y - 5, "enthalpy-label", { "text-anchor": "end" });
+          }
+        }
+      }
+
+      function renderChart() {
+        renderChartBase();
+        if (state.points.length > 1) {
+          const coordinates = state.points.map(chartPosition).map(({ x, y }) => `${x},${y}`).join(" ");
+          overlay.appendChild(svgElement("polyline", { class: "process", points: coordinates }));
+        }
+        state.points.forEach((point, index) => {
+          const { x, y } = chartPosition(point);
+          const group = svgElement("g", { class: "point-group", role: "button", tabindex: "0", "aria-label": `${point.name}, ${point.T.toFixed(1)} derajat Celsius, RH ${point.rh.toFixed(1)} persen` });
+          const circle = svgElement("circle", {
+            class: `point${point.id === state.selectedId ? " selected" : ""}`,
+            cx: x, cy: y, r: 9, fill: point.color
+          });
+          group.addEventListener("click", () => selectPoint(point.id));
+          group.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectPoint(point.id);
+            }
+          });
+          group.appendChild(circle);
+          const label = svgElement("text", { class: "point-label", x: x + 15, y: y - 14 });
+          label.textContent = String(index + 1);
+          group.appendChild(label);
+          overlay.appendChild(group);
+        });
+      }
+
+      function renderList() {
+        const list = $("pointList");
+        list.replaceChildren();
+        if (!state.points.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-state";
+          empty.textContent = "Belum ada titik. Tambahkan melalui input atau klik bagan.";
+          list.appendChild(empty);
+        }
+        state.points.forEach((point, index) => {
+          const row = document.createElement("div");
+          row.className = `point-row${point.id === state.selectedId ? " active" : ""}${point.id === state.editingId ? " editing" : ""}`;
+          row.addEventListener("click", () => selectPoint(point.id));
+          const swatch = document.createElement("i");
+          swatch.className = "point-color";
+          swatch.style.backgroundColor = point.color;
+          const info = document.createElement("div");
+          info.className = "point-info";
+          const title = document.createElement("strong");
+          title.textContent = `${index + 1}. ${point.name}`;
+          const detail = document.createElement("small");
+          detail.textContent = `${point.T.toFixed(1)} °C · RH ${point.rh.toFixed(1)}%`;
+          info.append(title, detail);
+          const edit = document.createElement("button");
+          edit.className = "edit-btn";
+          edit.type = "button";
+          edit.textContent = point.id === state.editingId ? "Mengedit" : "Edit";
+          edit.setAttribute("aria-label", `Edit ${point.name}`);
+          edit.addEventListener("click", (event) => {
+            event.stopPropagation();
+            startEditing(point.id);
+          });
+          const remove = document.createElement("button");
+          remove.className = "delete-btn";
+          remove.type = "button";
+          remove.setAttribute("aria-label", `Hapus ${point.name}`);
+          remove.textContent = "×";
+          remove.addEventListener("click", (event) => {
+            event.stopPropagation();
+            state.points = state.points.filter((item) => item.id !== point.id);
+            if (state.editingId === point.id) stopEditing();
+            if (state.selectedId === point.id) {
+              state.selectedId = state.points.length ? state.points[state.points.length - 1].id : null;
+            }
+            render();
+          });
+          row.append(swatch, info, edit, remove);
+          list.appendChild(row);
+        });
+        $("pointCount").textContent = `${state.points.length} titik`;
+      }
+
+      function renderResults() {
+        const container = $("tableWrap");
+        const selected = state.points.find((item) => item.id === state.selectedId);
+        if (!state.points.length) {
+          container.innerHTML = '<div class="results-empty">Tambahkan titik untuk menampilkan parameter setiap kondisi udara.</div>';
+          $("selectedCaption").textContent = "Pilih baris atau titik pada bagan untuk menyorot kondisi";
+          return;
+        }
+        $("selectedCaption").textContent = selected
+          ? `${state.points.length} titik · Dipilih: ${selected.name}`
+          : `${state.points.length} titik · Klik baris untuk menyorot`;
+        const columns = [
+          ["Nama titik", (point) => point.name],
+          ["Suhu bola kering (°C)", (point) => point.T],
+          ["Kelembapan relatif (%)", (point) => point.rh],
+          ["Rasio kelembapan (g/kg)", (point) => point.W * 1000],
+          ["Entalpi (kJ/kg)", (point) => point.enthalpy],
+          ["Suhu bola basah (°C)", (point) => point.wetBulb],
+          ["Titik embun (°C)", (point) => point.dewPoint],
+          ["Volume spesifik (m³/kg)", (point) => point.specificVolume],
+          ["Tekanan uap (kPa)", (point) => point.vaporPressure]
+        ];
+        const table = document.createElement("table");
+        table.className = "parameter-table";
+        const head = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        columns.forEach(([label]) => {
+          const heading = document.createElement("th");
+          heading.scope = "col";
+          heading.textContent = label;
+          headerRow.appendChild(heading);
+        });
+        head.appendChild(headerRow);
+        const body = document.createElement("tbody");
+        state.points.forEach((point) => {
+          const row = document.createElement("tr");
+          row.className = point.id === state.selectedId ? "selected" : "";
+          row.tabIndex = 0;
+          row.setAttribute("aria-selected", String(point.id === state.selectedId));
+          row.addEventListener("click", () => selectPoint(point.id));
+          row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectPoint(point.id);
+            }
+          });
+          columns.forEach(([label, getValue], index) => {
+            const cell = document.createElement("td");
+            const value = getValue(point);
+            if (index === 0) {
+              const name = document.createElement("span");
+              name.className = "point-name-cell";
+              const swatch = document.createElement("i");
+              swatch.className = "point-color";
+              swatch.style.backgroundColor = point.color;
+              const text = document.createElement("span");
+              text.textContent = value;
+              name.append(swatch, text);
+              cell.appendChild(name);
+            } else {
+              cell.textContent = value === null ? "—" : Number(value).toFixed(2);
+            }
+            row.appendChild(cell);
+          });
+          body.appendChild(row);
+        });
+        table.append(head, body);
+        container.replaceChildren(table);
+      }
+
+      function render() {
+        renderChart();
+        renderList();
+        renderResults();
+      }
+
+      function selectPoint(id) {
+        if (state.editingId !== null && state.editingId !== id) stopEditing();
+        state.selectedId = id;
+        render();
+      }
+
+      function showError(message) {
+        const element = $("formMessage");
+        element.textContent = message;
+        element.className = "message error";
+      }
+
+      setupParameterInputs();
+      renderChartBase();
+
+      $("pointForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        $("formMessage").className = "message";
+        try {
+          const parameterA = PARAMETERS.find((parameter) => parameter.key === $("parameterA").value);
+          const parameterB = PARAMETERS.find((parameter) => parameter.key === $("parameterB").value);
+          const targetA = Number($("valueA").value);
+          const targetB = Number($("valueB").value);
+          if (!Number.isFinite(targetA) || targetA < parameterA.min || targetA > parameterA.max) {
+            throw new Error(`${parameterA.label} harus berada pada rentang ${parameterA.min}–${parameterA.max} ${parameterA.unit}.`);
+          }
+          if (!Number.isFinite(targetB) || targetB < parameterB.min || targetB > parameterB.max) {
+            throw new Error(`${parameterB.label} harus berada pada rentang ${parameterB.min}–${parameterB.max} ${parameterB.unit}.`);
+          }
+          const pressure = pressureKpa();
+          const stateFromInputs = solveState(parameterA.key, targetA, parameterB.key, targetB, pressure);
+          const existingPoint = state.points.find((point) => point.id === state.editingId);
+          createPoint(stateFromInputs.T, stateFromInputs.rh, $("pointName").value, existingPoint);
+          stopEditing();
+          $("pointName").value = "";
+          render();
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+
+      $("cancelEdit").addEventListener("click", () => {
+        stopEditing();
+        $("pointName").value = "";
+        $("formMessage").className = "message";
+        updateParameterInputs();
+        render();
+      });
+
+      $("clearPoints").addEventListener("click", () => {
+        state.points = [];
+        state.selectedId = null;
+        stopEditing();
+        $("formMessage").className = "message";
+        $("pointName").value = "";
+        updateParameterInputs();
+        render();
+      });
+
+      pressureInput.addEventListener("change", () => {
+        try {
+          const pressure = pressureKpa();
+          const recalculated = state.points.map((point) => {
+            const result = calculate(point.T, point.rh, pressure);
+            if (result.W * 1000 > CHART.maxHumidityRatio) {
+              throw new Error("Perubahan tekanan membuat salah satu titik berada di luar area bagan.");
+            }
+            return { ...point, ...result };
+          });
+          state.points = recalculated;
+          lastPressure = pressure;
+          $("formMessage").className = "message";
+          if (state.editingId !== null) updateParameterInputs();
+          render();
+        } catch (error) {
+          pressureInput.value = String(lastPressure);
+          showError(error.message);
+        }
+      });
+
+      overlay.addEventListener("click", (event) => {
+        if (event.target.closest(".point-group")) return;
+        const pointer = overlay.createSVGPoint();
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        const chartPoint = pointer.matrixTransform(overlay.getScreenCTM().inverse());
+        const x = chartPoint.x;
+        const y = chartPoint.y;
+        if (x < CHART.xMin || x > CHART.xMax || y < CHART.yTop || y > CHART.yBottom) return;
+        const T = CHART.tempMin + (x - CHART.xMin) / (CHART.xMax - CHART.xMin) * (CHART.tempMax - CHART.tempMin);
+        const W = (CHART.yBottom - y) / (CHART.yBottom - CHART.yTop) * CHART.maxHumidityRatio / 1000;
+        try {
+          const pressure = pressureKpa();
+          const maximumW = saturatedHumidityRatio(T, pressure);
+          if (W > maximumW + 1e-8) {
+            throw new Error("Klik di bawah kurva jenuh (RH 100%) untuk memilih kondisi udara yang valid.");
+          }
+          const pv = pressure * W / (0.621945 + W);
+          const rh = Math.max(0, Math.min(100, pv / saturationPressure(T) * 100));
+          createPoint(T, rh, `Titik ${state.points.length + 1}`);
+          $("pointName").value = "";
+          stopEditing();
+          render();
+          $("formMessage").className = "message";
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
