@@ -65,11 +65,11 @@
     .chart-overlay .grid-line.major { stroke: #d3dad5; }
     .chart-overlay .rh-line { fill: none; stroke: #9ab8a8; stroke-width: 1.5; }
     .chart-overlay .rh-line.saturated { stroke: #176b52; stroke-width: 3; }
-    .chart-overlay .enthalpy-line { fill: none; stroke: #d3a279; stroke-width: 1.25; stroke-dasharray: 5 4; }
+    .chart-overlay .wet-bulb-line { fill: none; stroke: #cf8b5c; stroke-width: 1.35; stroke-dasharray: 5 4; }
     .chart-overlay .axis-line { stroke: #53615a; stroke-width: 2; }
     .chart-overlay .chart-label { fill: #53615a; font-size: 13px; }
     .chart-overlay .curve-label { fill: #176b52; font-size: 12px; font-weight: 650; }
-    .chart-overlay .enthalpy-label { fill: #9a6844; font-size: 11px; }
+    .chart-overlay .wet-bulb-label { fill: #965c37; font-size: 11px; font-weight: 650; }
     .chart-overlay .process { fill: none; stroke: #176b52; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .8; pointer-events: none; }
     .chart-overlay .point { stroke: #fff; stroke-width: 3; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
     .chart-overlay .point.selected { stroke: #182b25; stroke-width: 4; }
@@ -182,7 +182,7 @@
             <h2 id="chart-title">Psychrometric chart</h2>
             <p>ASHRAE · Normal temperature · Sea level</p>
           </div>
-          <div class="chart-tools"><span><i class="legend-dot"></i> State points</span><span>Lines = process</span></div>
+          <div class="chart-tools"><span><i class="legend-dot"></i> State points</span><span>TDB grid (2°C) · TWB lines (2°C)</span><span>RH curves · Process line connects points</span></div>
         </div>
         <div class="chart-wrap" id="chartWrap">
           <svg class="chart-overlay" id="chartOverlay" viewBox="0 0 1200 800" role="img" aria-label="Vector psychrometric chart with dry-bulb temperature on the horizontal axis and humidity ratio on the vertical axis"></svg>
@@ -211,11 +211,11 @@
                 <div class="input-shell"><select id="parameterB"></select></div>
               </div>
               <div class="field">
-                <label id="valueALabel" for="valueA">Nilai parameter 1</label>
+                <label id="valueALabel" for="valueA">Parameter 1 value</label>
                 <div class="input-shell"><input id="valueA" type="number" step="any" required><span id="unitA"></span></div>
               </div>
               <div class="field">
-                <label id="valueBLabel" for="valueB">Nilai parameter 2</label>
+                <label id="valueBLabel" for="valueB">Parameter 2 value</label>
                 <div class="input-shell"><input id="valueB" type="number" step="any" required><span id="unitB"></span></div>
               </div>
             </div>
@@ -586,10 +586,10 @@
         overlay.appendChild(fill);
 
         const grid = svgElement("g", { "clip-path": "url(#psychrometricPlotClip)" });
-        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 2.5) {
+        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 2) {
           const x = chartPosition({ T, W: 0 }).x;
           grid.appendChild(svgElement("line", {
-            class: `grid-line${T % 5 === 0 ? " major" : ""}`,
+            class: `grid-line${T % 10 === 0 ? " major" : ""}`,
             x1: x, y1: CHART.yTop, x2: x, y2: CHART.yBottom
           }));
         }
@@ -612,9 +612,14 @@
           }));
         }
 
-        for (let enthalpy = 20; enthalpy <= 160; enthalpy += 10) {
-          const path = chartPath((T) => 1000 * (enthalpy - 1.006 * T) / (2501 + 1.86 * T), pressure);
-          grid.appendChild(svgElement("path", { class: "enthalpy-line", d: path }));
+        for (let wetBulb = 0; wetBulb <= 30; wetBulb += 2) {
+          const saturatedHumidity = saturatedHumidityRatio(wetBulb, pressure);
+          const saturatedEnthalpy = 1.006 * wetBulb + saturatedHumidity * (2501 + 1.86 * wetBulb);
+          const path = chartPath((T) => {
+            if (T < wetBulb) return null;
+            return 1000 * (saturatedEnthalpy - 1.006 * T) / (2501 + 1.86 * T);
+          }, pressure);
+          grid.appendChild(svgElement("path", { class: "wet-bulb-line", d: path }));
         }
         overlay.appendChild(grid);
 
@@ -627,7 +632,7 @@
         }));
         overlay.appendChild(axes);
 
-        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 5) {
+        for (let T = CHART.tempMin; T <= CHART.tempMax; T += 2) {
           const x = chartPosition({ T, W: 0 }).x;
           addText(overlay, String(T), x, CHART.yBottom + 23, "chart-label", { "text-anchor": "middle" });
         }
@@ -658,12 +663,14 @@
           addText(overlay, `${rh}%`, position.x - 6, position.y - 5, "curve-label", { "text-anchor": "end" });
         }
 
-        for (let enthalpy = 40; enthalpy <= 140; enthalpy += 20) {
-          const labelT = 48;
-          const W = (enthalpy - 1.006 * labelT) / (2501 + 1.86 * labelT);
+        for (let wetBulb = 0; wetBulb <= 30; wetBulb += 2) {
+          const saturatedHumidity = saturatedHumidityRatio(wetBulb, pressure);
+          const saturatedEnthalpy = 1.006 * wetBulb + saturatedHumidity * (2501 + 1.86 * wetBulb);
+          const labelT = (wetBulb + Math.min(CHART.tempMax, saturatedEnthalpy / 1.006)) / 2;
+          const W = (saturatedEnthalpy - 1.006 * labelT) / (2501 + 1.86 * labelT);
           if (W > 0 && W * 1000 < CHART.maxHumidityRatio) {
             const position = chartPosition({ T: labelT, W });
-            addText(overlay, String(enthalpy), position.x - 6, position.y - 5, "enthalpy-label", { "text-anchor": "end" });
+            addText(overlay, `${wetBulb}°`, position.x, position.y - 6, "wet-bulb-label", { "text-anchor": "middle" });
           }
         }
       }
