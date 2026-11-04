@@ -26,7 +26,7 @@
       margin: 0;
       background: var(--canvas);
       color: var(--ink);
-      font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+      font: 16px/1.55 "Segoe UI", Arial, sans-serif;
     }
 
     button, input { font: inherit; }
@@ -39,24 +39,24 @@
       display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px;
       background: var(--green); color: white; font-size: 20px; font-weight: 700;
     }
-    .brand h1 { margin: 0; font-size: 19px; letter-spacing: -.4px; }
-    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
-    .creator { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; color: var(--muted); font-size: 11px; }
+    .brand h1 { margin: 0; font-size: 22px; letter-spacing: -.4px; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .creator { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; color: var(--muted); font-size: 13px; }
     .creator strong { color: var(--ink); font-weight: 650; }
     .creator a { color: var(--green); text-decoration: none; }
     .creator a:hover { color: var(--green-dark); text-decoration: underline; }
-    .pressure-control { display: flex; align-items: center; gap: 10px; padding: 9px 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
-    .pressure-control label { color: var(--muted); font-size: 12px; }
-    .pressure-control input { width: 76px; padding: 3px 0; border: 0; outline: 0; color: var(--ink); font-weight: 650; text-align: right; }
-    .pressure-control span { color: var(--muted); font-size: 12px; }
+    .pressure-control { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+    .pressure-control label { color: var(--muted); font-size: 14px; }
+    .pressure-control input { width: 88px; padding: 3px 0; border: 0; outline: 0; color: var(--ink); font-size: 16px; font-weight: 650; text-align: right; }
+    .pressure-control span { color: var(--muted); font-size: 14px; }
 
     .layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 20px; }
     .panel { min-width: 0; overflow: hidden; background: var(--paper); border: 1px solid var(--line); border-radius: 17px; box-shadow: var(--shadow); }
     .chart-panel { padding: 18px 18px 14px; }
     .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin: 0 0 13px; }
-    .panel-heading h2, .side-section h2 { margin: 0; font-size: 15px; letter-spacing: -.15px; }
-    .panel-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
-    .chart-tools { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; }
+    .panel-heading h2, .side-section h2 { margin: 0; font-size: 19px; letter-spacing: -.15px; }
+    .panel-heading p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .chart-tools { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
     .legend-dot { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border: 2px solid white; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 1px var(--green); vertical-align: -1px; }
     .chart-wrap { position: relative; width: 100%; aspect-ratio: 1200 / 800; overflow: hidden; border: 1px solid #e8e9e5; border-radius: 9px; background: #fff; }
     .chart-overlay { display: block; width: 100%; height: 100%; touch-action: manipulation; }
@@ -67,16 +67,17 @@
     .chart-overlay .rh-line.saturated { stroke: #176b52; stroke-width: 3; }
     .chart-overlay .wet-bulb-line { fill: none; stroke: #cf8b5c; stroke-width: 1.35; stroke-dasharray: 5 4; }
     .chart-overlay .axis-line { stroke: #53615a; stroke-width: 2; }
-    .chart-overlay .chart-label { fill: #53615a; font-size: 13px; }
-    .chart-overlay .curve-label { fill: #176b52; font-size: 12px; font-weight: 650; }
-    .chart-overlay .wet-bulb-label { fill: #965c37; font-size: 11px; font-weight: 650; }
+    .chart-overlay .chart-label { fill: #53615a; font-size: 16px; }
+    .chart-overlay .curve-label { fill: #176b52; font-size: 15px; font-weight: 650; }
+    .chart-overlay .wet-bulb-label { fill: #965c37; font-size: 14px; font-weight: 650; }
     .chart-overlay .process { fill: none; stroke: #176b52; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .8; pointer-events: none; }
     .chart-overlay .point { stroke: #fff; stroke-width: 3; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.35)); }
     .chart-overlay .point.selected { stroke: #182b25; stroke-width: 4; }
-    .chart-overlay .point-label { fill: #12251e; stroke: white; stroke-width: 4px; paint-order: stroke; font-size: 15px; font-weight: 700; pointer-events: none; }
+    .chart-overlay .point-label { fill: #12251e; stroke: white; stroke-width: 4px; paint-order: stroke; font-size: 17px; font-weight: 700; pointer-events: none; }
     .chart-overlay .point-group { cursor: pointer; }
-    .chart-hint { display: flex; justify-content: space-between; gap: 12px; padding-top: 11px; color: var(--muted); font-size: 11px; }
+    .chart-hint { display: flex; justify-content: space-between; gap: 12px; padding-top: 11px; color: var(--muted); font-size: 13px; }
     .chart-hint strong { color: var(--green); font-weight: 650; }
+    .chart-scroll-hint { display: none; }
 
     .sidebar { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); align-items: start; gap: 16px; }
     .side-section { padding: 18px; }
@@ -84,47 +85,49 @@
     .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .field { display: grid; gap: 6px; min-width: 0; }
     .field.full { grid-column: 1 / -1; }
-    .field label { color: #53615a; font-size: 11px; font-weight: 650; }
+    .field label { color: #53615a; font-size: 14px; font-weight: 650; }
     .input-shell { display: flex; align-items: center; min-width: 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: #fcfcfa; }
     .input-shell:focus-within { border-color: #7eac97; box-shadow: 0 0 0 3px rgba(23,107,82,.08); }
-    .input-shell input { width: 100%; min-width: 0; padding: 10px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
-    .input-shell select { width: 100%; min-width: 0; padding: 10px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
-    .input-shell span { margin-left: 5px; color: #849088; font-size: 11px; white-space: nowrap; }
-    .primary-btn { width: 100%; margin-top: 14px; padding: 11px 14px; border: 0; border-radius: 9px; background: var(--green); color: #fff; font-weight: 650; transition: background .15s, transform .15s; }
+    .input-shell input { width: 100%; min-width: 0; padding: 11px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 16px; }
+    .input-shell select { width: 100%; min-width: 0; padding: 11px 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 15px; }
+    .input-shell span { margin-left: 5px; color: #849088; font-size: 13px; white-space: nowrap; }
+    .primary-btn { width: 100%; min-height: 44px; margin-top: 14px; padding: 11px 14px; border: 0; border-radius: 9px; background: var(--green); color: #fff; font-weight: 650; transition: background .15s, transform .15s; }
     .primary-btn:hover { background: var(--green-dark); }
     .primary-btn:active { transform: translateY(1px); }
-    .secondary-btn { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #59665f; font-size: 11px; }
+    .secondary-btn { min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: #59665f; font-size: 13px; }
     .secondary-btn:hover { border-color: #b6c6bd; color: var(--green); }
     .form-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 14px; }
     .form-actions .primary-btn { margin: 0; }
-    .edit-btn { padding: 5px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--green); font-size: 11px; }
+    .edit-btn { min-height: 36px; padding: 5px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--green); font-size: 13px; }
     .edit-btn:hover { background: var(--mint); }
-    .form-note { margin: 11px 0 0; color: var(--muted); font-size: 11px; }
-    .message { display: none; margin-top: 11px; padding: 9px 10px; border-radius: 8px; font-size: 11px; }
+    .form-note { margin: 11px 0 0; color: var(--muted); font-size: 13px; }
+    .message { display: none; margin-top: 11px; padding: 9px 10px; border-radius: 8px; font-size: 13px; }
     .message.error { display: block; background: #fff0ed; color: #a53d2d; }
 
-    .point-list { display: grid; gap: 8px; }
-    .empty-state { padding: 14px 12px; border: 1px dashed #d5ddd7; border-radius: 10px; color: var(--muted); text-align: center; font-size: 11px; }
+    .point-list { display: grid; max-height: 320px; gap: 8px; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+    .empty-state { padding: 14px 12px; border: 1px dashed #d5ddd7; border-radius: 10px; color: var(--muted); text-align: center; font-size: 13px; }
     .point-row { display: flex; align-items: center; gap: 9px; padding: 9px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
     .point-row.active { border-color: #9cbead; background: #f5faf7; }
     .point-row.editing { box-shadow: inset 3px 0 var(--green); }
     .point-color { flex: 0 0 11px; width: 11px; height: 11px; border-radius: 50%; }
     .point-info { flex: 1; min-width: 0; }
-    .point-info strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-    .point-info small { color: var(--muted); font-size: 10px; }
+    .point-info strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .point-info small { color: var(--muted); font-size: 13px; }
     .delete-btn { padding: 4px 6px; border: 0; background: transparent; color: #8c9890; font-size: 17px; line-height: 1; }
     .delete-btn:hover { color: #b33f32; }
     .list-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 11px; }
-    .list-actions span { color: var(--muted); font-size: 10px; }
+    .list-actions span { color: var(--muted); font-size: 13px; }
 
     .results { margin-top: 20px; }
     .results-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
-    .results-head h2 { margin: 0; font-size: 15px; }
-    .results-head span { color: var(--muted); font-size: 11px; }
+    .results-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+    .results-head h2 { margin: 0; font-size: 19px; }
+    .results-head span { color: var(--muted); font-size: 13px; }
+    .save-parameters-status { color: var(--muted); font-size: 13px; }
     .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
-    .parameter-table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
-    .parameter-table th, .parameter-table td { padding: 10px 12px; border-bottom: 1px solid #edf0ec; text-align: right; }
-    .parameter-table th { position: sticky; top: 0; background: #f7f9f7; color: #53615a; font-size: 10px; font-weight: 650; }
+    .parameter-table { width: 100%; border-collapse: collapse; font-size: 20px; white-space: nowrap; }
+    .parameter-table th, .parameter-table td { padding: 14px 16px; border-bottom: 1px solid #edf0ec; text-align: right; }
+    .parameter-table th { position: sticky; top: 0; background: #f7f9f7; color: #53615a; font-size: 13px; font-weight: 650; }
     .parameter-table th:first-child, .parameter-table td:first-child { position: sticky; left: 0; text-align: left; }
     .parameter-table th:first-child { z-index: 2; background: #f7f9f7; }
     .parameter-table td:first-child { background: white; font-weight: 650; }
@@ -134,8 +137,9 @@
     .parameter-table tbody tr:last-child td { border-bottom: 0; }
     .parameter-table .point-name-cell { display: flex; align-items: center; gap: 8px; }
     .parameter-table .point-color { flex: 0 0 9px; width: 9px; height: 9px; }
-    .results-empty { padding: 22px; border: 1px dashed #d5ddd7; border-radius: 11px; color: var(--muted); text-align: center; font-size: 12px; }
-    .disclaimer { margin: 11px 1px 0; color: var(--muted); font-size: 10px; }
+    .results-empty { padding: 22px; border: 1px dashed #d5ddd7; border-radius: 11px; color: var(--muted); text-align: center; font-size: 13px; }
+    .disclaimer { margin: 11px 1px 0; color: var(--muted); font-size: 13px; }
+    .print-creator { display: none; }
 
     @media (max-width: 1000px) {
       .app { padding: 22px 20px 34px; }
@@ -147,11 +151,52 @@
       .sidebar { grid-template-columns: 1fr; align-items: start; }
       .chart-panel { padding: 12px; }
       .chart-tools { display: none; }
+      .chart-wrap { aspect-ratio: auto; overflow-x: auto; overflow-y: hidden; }
+      .chart-overlay { width: 900px; height: 600px; }
       .chart-hint { flex-direction: column; gap: 4px; }
+      .chart-scroll-hint { display: block; color: var(--green); font-weight: 650; }
+      .results-head { align-items: flex-start; flex-direction: column; }
+      .results-actions { justify-content: flex-start; flex-wrap: wrap; }
     }
     @media (max-width: 520px) {
       .sidebar { grid-template-columns: 1fr; }
       .results-head { align-items: flex-start; flex-direction: column; }
+    }
+    @page {
+      size: landscape;
+      margin: 8mm;
+    }
+    @media print {
+      html, body {
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .app { max-width: none; padding: 0; }
+      .topbar, .sidebar { display: none; }
+      .layout { display: block; }
+      .panel { box-shadow: none; break-inside: avoid; }
+      .chart-panel { padding: 0; border: 0; break-after: page; }
+      .chart-wrap { width: 100%; height: 230mm; aspect-ratio: auto; overflow: visible; }
+      .chart-overlay { width: 100%; height: 100%; }
+      .chart-tools { display: none; }
+      .print-creator { display: block; margin: 0 0 8px; color: #53615a; font-size: 12px; }
+      .print-creator a { color: var(--green-dark); text-decoration: underline; }
+      .chart-scroll-hint, .form-actions, .form-note, .delete-btn, .edit-btn,
+      .list-actions button, .results-actions button, #selectedCaption,
+      #saveParametersStatus, .chart-hint { display: none !important; }
+      .results { margin: 0; break-before: page; }
+      .table-wrap { overflow: visible; }
+      .parameter-table { width: 100%; font-size: 20px; }
+      .parameter-table th, .parameter-table td { position: static; padding: 9px 8px; white-space: normal; }
+      .parameter-table th { font-size: 12px; }
+      .parameter-table td:first-child { font-size: 12px; }
+      .parameter-table th { font-size: 12px; }
+      .parameter-table th:first-child, .parameter-table td:first-child { position: static; }
+      .parameter-table th:first-child { z-index: auto; }
+      .parameter-table thead { display: table-header-group; }
+      .parameter-table tr { break-inside: avoid; }
+      .disclaimer { display: none; }
     }
   </style>
 </head>
@@ -181,6 +226,7 @@
           <div>
             <h2 id="chart-title">Psychrometric chart</h2>
             <p>ASHRAE · Normal temperature · Sea level</p>
+             <p class="print-creator">LinkedIn: <a href="https://www.linkedin.com/in/rezamulyanalfa">Reza Alfarizi Mulyana</a></p>
           </div>
           <div class="chart-tools"><span><i class="legend-dot"></i> State points</span><span>TDB grid (2°C) · TWB lines (2°C)</span><span>RH curves · Process line connects points</span></div>
         </div>
@@ -190,6 +236,7 @@
         <div class="chart-hint">
           <span><strong>Tip:</strong> Click the chart to add a point. Grid lines are calculated from the selected pressure.</span>
           <span>Axes: dry-bulb temperature 0–50 °C · humidity ratio 0–30 g/kg</span>
+          <span class="chart-scroll-hint">On smaller screens, scroll horizontally to explore the full chart.</span>
         </div>
       </section>
 
@@ -242,7 +289,12 @@
     <section class="results" aria-labelledby="results-title">
       <div class="results-head">
         <h2 id="results-title">Properties for each point</h2>
-        <span id="selectedCaption">Select a row or chart point to highlight a state</span>
+        <div class="results-actions">
+          <span id="selectedCaption">Select a row or chart point to highlight a state</span>
+          <button class="secondary-btn" id="savePdf" type="button">Save to PDF</button>
+          <button class="secondary-btn" id="saveParameters" type="button" disabled>Save parameters (CSV)</button>
+          <span class="save-parameters-status" id="saveParametersStatus" role="status" aria-live="polite"></span>
+        </div>
       </div>
       <div class="table-wrap" id="tableWrap">
         <div class="results-empty">Add points to display the properties for each air state.</div>
@@ -758,6 +810,7 @@
       function renderResults() {
         const container = $("tableWrap");
         const selected = state.points.find((item) => item.id === state.selectedId);
+        $("saveParameters").disabled = state.points.length === 0;
         if (!state.points.length) {
           container.innerHTML = '<div class="results-empty">Add points to display the properties for each air state.</div>';
           $("selectedCaption").textContent = "Select a row or chart point to highlight a state";
@@ -825,6 +878,29 @@
         container.replaceChildren(table);
       }
 
+      function saveParametersCsv() {
+        const status = $("saveParametersStatus");
+        const rows = [...$("tableWrap").querySelectorAll(".parameter-table tr")].map((row) =>
+          [...row.cells].map((cell) => cell.textContent.trim())
+        );
+        if (rows.length < 2) {
+          status.textContent = "Add at least one point before saving parameters.";
+          return;
+        }
+
+        const csv = rows.map((row) => row.map((value) =>
+          `"${value.replaceAll('"', '""')}"`
+        ).join(",")).join("\r\n");
+        const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "air-state-parameters.csv";
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        status.textContent = "Parameter CSV downloaded.";
+      }
+
       function render() {
         renderChart();
         renderList();
@@ -845,6 +921,9 @@
 
       setupParameterInputs();
       renderChartBase();
+
+      $("savePdf").addEventListener("click", () => window.print());
+      $("saveParameters").addEventListener("click", saveParametersCsv);
 
       $("pointForm").addEventListener("submit", (event) => {
         event.preventDefault();
