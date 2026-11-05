@@ -163,35 +163,49 @@
       .results-head { align-items: flex-start; flex-direction: column; }
     }
     @page {
-      size: landscape;
+      size: A4 landscape;
       margin: 8mm;
     }
     @media print {
       html, body {
         background: #fff;
+        width: 100%;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
       }
-      .app { max-width: none; padding: 0; }
+      .app { width: 100%; max-width: none; padding: 0; }
       .topbar, .sidebar { display: none; }
       .layout { display: block; }
       .panel { box-shadow: none; break-inside: avoid; }
       .chart-panel { padding: 0; border: 0; break-after: page; }
-      .chart-wrap { width: 100%; height: 230mm; aspect-ratio: auto; overflow: visible; }
+      .panel-heading { margin-bottom: 5mm; }
+      .panel-heading h2 { font-size: 16px; }
+      .panel-heading p { margin-top: 2px; font-size: 11px; }
+      .chart-wrap {
+        width: 255mm;
+        height: 170mm;
+        margin: 0 auto;
+        aspect-ratio: auto;
+        overflow: visible;
+      }
       .chart-overlay { width: 100%; height: 100%; }
       .chart-tools { display: none; }
-      .print-creator { display: block; margin: 0 0 8px; color: #53615a; font-size: 12px; }
+      .print-creator { display: block; margin: 2px 0 0; color: #53615a; font-size: 10px; }
       .print-creator a { color: var(--green-dark); text-decoration: underline; }
       .chart-scroll-hint, .form-actions, .form-note, .delete-btn, .edit-btn,
       .list-actions button, .results-actions button, #selectedCaption,
       #saveParametersStatus, .chart-hint { display: none !important; }
-      .results { margin: 0; break-before: page; }
+      .results { margin: 0; }
       .table-wrap { overflow: visible; }
-      .parameter-table { width: 100%; font-size: 20px; }
-      .parameter-table th, .parameter-table td { position: static; padding: 9px 8px; white-space: normal; }
-      .parameter-table th { font-size: 20px; }
-      .parameter-table td:first-child { font-size: 20px; }
-      .parameter-table th { font-size: 14px; }
+      .parameter-table { width: 100%; table-layout: fixed; font-size: 9pt; }
+      .parameter-table th, .parameter-table td {
+        position: static;
+        padding: 2mm 1.5mm;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+      .parameter-table th { font-size: 8pt; }
+      .parameter-table td:first-child { font-size: 9pt; }
       .parameter-table th:first-child, .parameter-table td:first-child { position: static; }
       .parameter-table th:first-child { z-index: auto; }
       .parameter-table thead { display: table-header-group; }
