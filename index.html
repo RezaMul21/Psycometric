@@ -163,7 +163,7 @@
       .results-head { align-items: flex-start; flex-direction: column; }
     }
     @page {
-      size: A4 landscape;
+      size: A4 portrait;
       margin: 8mm;
     }
     @media print {
@@ -177,15 +177,14 @@
       .topbar, .sidebar { display: none; }
       .layout { display: block; }
       .panel { box-shadow: none; break-inside: avoid; }
-      .chart-panel { padding: 0; border: 0; break-after: page; }
-      .panel-heading { margin-bottom: 5mm; }
+      .chart-panel { padding: 0; border: 0; }
+      .panel-heading { margin-bottom: 2mm; }
       .panel-heading h2 { font-size: 16px; }
       .panel-heading p { margin-top: 2px; font-size: 11px; }
       .chart-wrap {
-        width: 255mm;
-        height: 170mm;
+        width: 100%;
         margin: 0 auto;
-        aspect-ratio: auto;
+        aspect-ratio: 1200 / 800;
         overflow: visible;
       }
       .chart-overlay { width: 100%; height: 100%; }
@@ -195,17 +194,19 @@
       .chart-scroll-hint, .form-actions, .form-note, .delete-btn, .edit-btn,
       .list-actions button, .results-actions button, #selectedCaption,
       #saveParametersStatus, .chart-hint { display: none !important; }
-      .results { margin: 0; }
+      .results { margin: 3mm 0 0; }
+      .results-head { margin-bottom: 2mm; }
+      .results-head h2 { font-size: 12pt; }
       .table-wrap { overflow: visible; }
-      .parameter-table { width: 100%; table-layout: fixed; font-size: 9pt; }
+      .parameter-table { width: 100%; table-layout: fixed; font-size: 7.5pt; }
       .parameter-table th, .parameter-table td {
         position: static;
-        padding: 2mm 1.5mm;
+        padding: 1.2mm 1mm;
         white-space: normal;
         overflow-wrap: anywhere;
       }
-      .parameter-table th { font-size: 8pt; }
-      .parameter-table td:first-child { font-size: 9pt; }
+      .parameter-table th { font-size: 6.5pt; }
+      .parameter-table td:first-child { font-size: 7.5pt; }
       .parameter-table th:first-child, .parameter-table td:first-child { position: static; }
       .parameter-table th:first-child { z-index: auto; }
       .parameter-table thead { display: table-header-group; }
